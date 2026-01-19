@@ -37,6 +37,17 @@
           (position) => {
             const lat = position.coords.latitude;
             const lon = position.coords.longitude;
+            const accuracy = position.coords.accuracy;
+
+            // Ignore bad fixes
+            if (accuracy > 100) return;
+
+            // Remove jitter
+            if (path.length > 0) {
+              const last = path[path.length - 1];
+              const distance = map.distance(last, [lat, lon]);
+              if (distance < 10) return;
+            }
 
             marker.setLatLng([lat, lon]);
 
@@ -48,15 +59,15 @@
               firstFix = false;
             }
 
-            console.log("📍 PC Location:", lat, lon);
+            console.log(`📍 ${lat}, ${lon} (±${accuracy}m)`);
           },
           (error) => {
             alert("Location error: " + error.message);
           },
           {
             enableHighAccuracy: true,
-            maximumAge: 1000,
-            timeout: 5000,
+            maximumAge: 0,
+            timeout: 10000,
           },
         );
       } else {
